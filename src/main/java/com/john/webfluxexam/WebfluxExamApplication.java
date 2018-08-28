@@ -19,10 +19,12 @@ import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.io.IOException;
+import java.util.Queue;
+import java.util.concurrent.*;
 
 @SpringBootApplication
 @Slf4j
@@ -51,7 +53,7 @@ public class WebfluxExamApplication {
 
     @Component
     public static class MyService {
-        @Async(value="tp") // 요청시 계속 쓰레드를 생성해서 절대로 실무에서 사용하지 말아야함
+        @Async(value = "tp") // 요청시 계속 쓰레드를 생성해서 절대로 실무에서 사용하지 말아야함
         //        public Future<String> hello() throws InterruptedException {
         //        public CompletableFuture<String> hello() throws InterruptedException {
         public ListenableFuture<String> hello() throws InterruptedException {
@@ -84,7 +86,8 @@ public class WebfluxExamApplication {
 
     public static void main(String[] args) {
 
-        try (ConfigurableApplicationContext c = SpringApplication.run(WebfluxExamApplication.class, args)) {}
+//        try (ConfigurableApplicationContext c = SpringApplication.run(WebfluxExamApplication.class, args)) {}
+        SpringApplication.run(WebfluxExamApplication.class, args);
     }
 
     @Autowired
@@ -109,8 +112,61 @@ public class WebfluxExamApplication {
     public static class MyController {
 
         @GetMapping("/async")
-        public String async() {
+        public String async() throws InterruptedException {
+            log.info("async");
+            Thread.sleep(2000);
+            return "hello";
+        }
 
+        @GetMapping("/callable")
+        public Callable<String> callable() throws InterruptedException {
+            log.info("callable");
+            return () -> {
+                log.info("async");
+                Thread.sleep(2000);
+                return "hello";
+            };
+        }
+
+        Queue<DeferredResult<String>> results = new ConcurrentLinkedDeque<>();
+
+        @GetMapping("/dr")
+        public DeferredResult<String> deferredResult() {
+            log.info("dr");
+            DeferredResult<String> dr = new DeferredResult<>(600000L);
+            results.add(dr);
+            return dr;
+        }
+
+        @GetMapping("/dr/count")
+        public String drCount() {
+            return String.valueOf(results.size());
+        }
+
+        @GetMapping("/dr/event")
+        public String drEvent(String msg) {
+            for (DeferredResult<String> dr : results) {
+                dr.setResult("Hello " + msg);
+                results.remove(dr);
+            }
+
+            return "OK";
+        }
+
+        @GetMapping("/emitter")
+        public ResponseBodyEmitter emitter() {
+            ResponseBodyEmitter emitter = new ResponseBodyEmitter();
+            Executors.newSingleThreadExecutor().submit(() -> {
+                try {
+                    for (int i = 1; i <= 50; i++) {
+                        emitter.send("<p>stream" + i + "</p>");
+                        Thread.sleep(100);
+                    }
+                } catch (Exception e) {
+                }
+            });
+
+            return emitter;
         }
     }
 }
