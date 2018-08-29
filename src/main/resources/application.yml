@@ -1,9 +1,10 @@
 logging:
-  level:
-    org:
-      springframework:
-        security: DEBUG
-    hibernate: DEBUG
+  config: classpath:logback.xml
+#  level:
+#    org:
+#      springframework:
+#        security: DEBUG
+#    hibernate: DEBUG
 
   pattern:
     console: '%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{15} - %msg%n'
