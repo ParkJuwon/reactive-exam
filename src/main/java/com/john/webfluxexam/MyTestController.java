@@ -31,34 +31,35 @@ public class MyTestController {
     public DeferredResult<String> rest(int idx) {
         DeferredResult<String> dr = new DeferredResult<>();
 
-        Completion
-                .from(rt.getForEntity(URL1, String.class, "hello" + idx))
-                .andApply(s -> rt.getForEntity(URL2, String.class, s.getBody()))
-                .andApply(s -> myService.work(s.getBody()))
-                .andError(e -> dr.setErrorResult(e.toString()))
-                .andAccept(s -> dr.setResult(s));
+//                ListenableFuture<ResponseEntity<String>> f1 = rt.getForEntity("http://localhost:8081/service?req={req}",
+//                        String.class, "hello" + idx);
+//                f1.addCallback(s -> {
+//                    ListenableFuture<ResponseEntity<String>> f2 = rt.getForEntity("http://localhost:8081/service2?req={req}",
+//                            String.class, s.getBody());
+//                    f2.addCallback(s2 -> {
+//                                ListenableFuture<String> f3 = myService.work(s2.getBody());
+//                                f3.addCallback(s3 -> {
+//                                    dr.setResult(s3);
+//                                }, e -> {
+//                                    dr.setErrorResult(e.getMessage());
+//                                });
+//
+//                            }, e -> {
+//                                dr.setErrorResult(e.getMessage());
+//                            }
+//                    );
+//                }, e -> {
+//                    dr.setErrorResult(e.getMessage());
+//                });
 
 
-        //        ListenableFuture<ResponseEntity<String>> f1 = rt.getForEntity("http://localhost:8081/service?req={req}",
-        //                String.class, "hello" + idx);
-        //        f1.addCallback(s -> {
-        //            ListenableFuture<ResponseEntity<String>> f2 = rt.getForEntity("http://localhost:8081/service2?req={req}",
-        //                    String.class, s.getBody());
-        //            f2.addCallback(s2 -> {
-        //                        ListenableFuture<String> f3 = myService.work(s2.getBody());
-        //                        f3.addCallback(s3 -> {
-        //                            dr.setResult(s3);
-        //                        }, e -> {
-        //                            dr.setErrorResult(e.getMessage());
-        //                        });
-        //
-        //                    }, e -> {
-        //                        dr.setErrorResult(e.getMessage());
-        //                    }
-        //            );
-        //        }, e -> {
-        //            dr.setErrorResult(e.getMessage());
-        //        });
+//        Completion
+//                .from(rt.getForEntity(URL1, String.class, "hello" + idx))
+//                .andApply(s -> rt.getForEntity(URL2, String.class, s.getBody()))
+//                .andApply(s -> myService.work(s.getBody()))
+//                .andError(e -> dr.setErrorResult(e.toString()))
+//                .andAccept(s -> dr.setResult(s));
+
 
         return dr;
     }
