@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.context.request.async.DeferredResult;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -30,6 +32,19 @@ public class MyTestController {
     @GetMapping("/rest")
     public DeferredResult<String> rest(int idx) {
         DeferredResult<String> dr = new DeferredResult<>();
+
+        toCf(rt.getForEntity(URL1, String.class, "hello" + idx))
+                .thenCompose(s -> {
+                    if(1 == 1) throw new RuntimeException("ERROR");
+                    return toCf(rt.getForEntity(URL2, String.class, s.getBody()));
+                })
+//                .thenCompose(s2 -> toCf(myService.work(s2.getBody())))
+                .thenApplyAsync(s2 -> myService.work2(s2.getBody()))
+                .thenAccept(s3 -> dr.setResult(s3))
+                .exceptionally(e -> {
+                    dr.setErrorResult(e.getMessage());
+                    return (Void) null;
+                });
 
 //                ListenableFuture<ResponseEntity<String>> f1 = rt.getForEntity("http://localhost:8081/service?req={req}",
 //                        String.class, "hello" + idx);
@@ -62,6 +77,12 @@ public class MyTestController {
 
 
         return dr;
+    }
+
+    public static <T> CompletableFuture<T> toCf(ListenableFuture<T> lf) {
+        CompletableFuture<T> cf = new CompletableFuture<>();
+        lf.addCallback(s -> cf.complete(s), e -> cf.completeExceptionally(e));
+        return cf;
     }
 
     public static class AcceptCompletion<S> extends Completion<S, Void> {

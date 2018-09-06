@@ -24,4 +24,9 @@ public class MyService {
     public ListenableFuture<String> work(String req) {
         return new AsyncResult<>(req + "/asyncwork");
     }
+
+
+    public String work2(String req) {
+        return req + "/asyncwork";
+    }
 }
