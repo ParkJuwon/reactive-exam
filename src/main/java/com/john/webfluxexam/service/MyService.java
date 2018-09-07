@@ -3,8 +3,11 @@ package com.john.webfluxexam.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -28,5 +31,10 @@ public class MyService {
 
     public String work2(String req) {
         return req + "/asyncwork";
+    }
+
+    @Async
+    public CompletableFuture<String> work3(String req) {
+        return CompletableFuture.completedFuture(req + "/asyncwork");
     }
 }

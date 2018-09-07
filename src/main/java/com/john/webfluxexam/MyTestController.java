@@ -29,13 +29,13 @@ public class MyTestController {
     static final String URL2 = "http://localhost:8081/service2?req={req}";
 
     // callback을 받아 비동기로 처리
-    @GetMapping("/rest")
+//    @GetMapping("/rest")
     public DeferredResult<String> rest(int idx) {
         DeferredResult<String> dr = new DeferredResult<>();
 
         toCf(rt.getForEntity(URL1, String.class, "hello" + idx))
                 .thenCompose(s -> {
-                    if(1 == 1) throw new RuntimeException("ERROR");
+//                    if(1 == 1) throw new RuntimeException("ERROR");
                     return toCf(rt.getForEntity(URL2, String.class, s.getBody()));
                 })
 //                .thenCompose(s2 -> toCf(myService.work(s2.getBody())))
@@ -43,7 +43,7 @@ public class MyTestController {
                 .thenAccept(s3 -> dr.setResult(s3))
                 .exceptionally(e -> {
                     dr.setErrorResult(e.getMessage());
-                    return (Void) null;
+                    return null;
                 });
 
 //                ListenableFuture<ResponseEntity<String>> f1 = rt.getForEntity("http://localhost:8081/service?req={req}",

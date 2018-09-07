@@ -8,6 +8,9 @@ import org.reactivestreams.Subscription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.Netty4ClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -18,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.async.DeferredResult;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 import java.util.Queue;
 import java.util.concurrent.Callable;
@@ -27,8 +29,14 @@ import java.util.concurrent.Executors;
 
 @SpringBootApplication
 @Slf4j
-@EnableAsync
+//@EnableAsync
 public class WebfluxExamApplication {
+
+    @Bean
+    @Profile("netty")
+    NettyReactiveWebServerFactory nettyReactiveWebServerFactory() {
+        return new NettyReactiveWebServerFactory();
+    }
 
     @RestController
     public static class Controller {
@@ -70,12 +78,6 @@ public class WebfluxExamApplication {
         return te;
     }
     */
-
-    public static void main(String[] args) {
-
-        //        try (ConfigurableApplicationContext c = SpringApplication.run(WebfluxExamApplication.class, args)) {}
-        SpringApplication.run(WebfluxExamApplication.class, args);
-    }
 
     @Autowired
     MyService myService;
@@ -177,20 +179,34 @@ public class WebfluxExamApplication {
             return "OK";
         }
 
-        @GetMapping("/emitter")
-        public ResponseBodyEmitter emitter() {
-            ResponseBodyEmitter emitter = new ResponseBodyEmitter();
-            Executors.newSingleThreadExecutor().submit(() -> {
-                try {
-                    for (int i = 1; i <= 50; i++) {
-                        emitter.send("<p>stream" + i + "</p>");
-                        Thread.sleep(100);
-                    }
-                } catch (Exception e) {
-                }
-            });
+//        @GetMapping("/emitter")
+//        public ResponseBodyEmitter emitter() {
+//            ResponseBodyEmitter emitter = new ResponseBodyEmitter();
+//            Executors.newSingleThreadExecutor().submit(() -> {
+//                try {
+//                    for (int i = 1; i <= 50; i++) {
+//                        emitter.send("<p>stream" + i + "</p>");
+//                        Thread.sleep(100);
+//                    }
+//                } catch (Exception e) {
+//                }
+//            });
+//
+//            return emitter;
+//        }
+    }
 
-            return emitter;
-        }
+
+//    public static void main(String[] args) {
+//
+//        //        try (ConfigurableApplicationContext c = SpringApplication.run(WebfluxExamApplication.class, args)) {}
+//        SpringApplication.run(WebfluxExamApplication.class, args);
+//    }
+
+
+    public static void main(String[] args) {
+        System.setProperty("reactor.ipc.netty.workerCount", "1");
+        System.setProperty("reactor.ipc.netty.pool.maxConnections", "2000");
+        SpringApplication.run(WebfluxExamApplication.class, args);
     }
 }
