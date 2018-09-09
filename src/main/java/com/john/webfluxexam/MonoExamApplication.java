@@ -10,7 +10,7 @@ import reactor.core.publisher.Mono;
 @SpringBootApplication
 @RestController
 @Slf4j
-public class WebFluxApplication {
+public class MonoExamApplication {
 
     @GetMapping("/")
     Mono<String> hello() {
@@ -31,6 +31,6 @@ public class WebFluxApplication {
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(WebFluxApplication.class, args);
+        SpringApplication.run(MonoExamApplication.class, args);
     }
 }
